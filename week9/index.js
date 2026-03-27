@@ -1,5 +1,6 @@
 const express=require("express")
 const app=express();
+const jwt=require("jsonwebtoken")
 app.use(express.json())
 const notes=[]; // this is bad practice, its an In memory variable which will help us store data
 const users=[{
@@ -12,7 +13,7 @@ const users=[{
 
 app.post("/signup",function(req,res){
     const username=req.body.username;
-    const password=req.body.passwod;
+    const password=req.body.password;
     const userExists=users.find(user=>user.username==username);
     if(userExists){
         return res.status(403).json({
@@ -21,7 +22,8 @@ app.post("/signup",function(req,res){
     }
 
     users.push({
-        username:username,password:password
+        username:username,
+        password:password
 });
 
 res.json({
@@ -30,18 +32,60 @@ res.json({
 })
 
 
-app.post("/sign",function(req,res){
-    const username=req.body.username;
-    const password=req.body.password;
 
-    const userExist=
-})
 
+app.post("/signin", function (req, res) {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (!user) {
+        return res.status(403).json({
+            message: "Incorrect credentials"
+        });
+    }
+
+    const token = jwt.sign(
+        { username: username },
+        "SECRET_KEY" // replace later with env
+    );
+
+    res.json({
+        token: token
+    });
+});
 
 // Post - create a note
 app.post("/notes",function(req,res){
-    const note =req.body.note;
-    notes.push(note);
+
+    //
+    const token=req.headers.token;
+    if(!token){
+        res.status(403).send({
+            message:"You are not logged in"
+        });
+        return ;
+    }
+
+    const decoded=jwt.verify(token,"Spidey");
+    const username=decoded.username;
+    if(!username){
+        res.status(403).json({
+            message:"malformed token"
+        })
+        return ;
+    }
+
+    const note=req.body.note;
+    
+
+   
+    notes.push({
+        note:note,
+        username:username
+        
+    });
 
 
     res.json(
@@ -53,8 +97,26 @@ app.post("/notes",function(req,res){
 
 // Get-get all my notes
 app.get("/notes",function(req,res){
+    const token=req.headers.token;
+    if(!token){
+        res.status(403).send({
+            message:"You are not logged in"
+        });
+        return ;
+    }
+
+    const decoded=jwt.verify(token,"Spidey");
+    const username=decoded.username;
+    if(!username){
+        res.status(403).json({
+            message:"malformed token"
+        })
+        return ;
+    }
+
+    const userNote=notes.filter(note=>note.username===username);
     res.json({
-        notes
+        notes:userNotes
     })
 }
 )
