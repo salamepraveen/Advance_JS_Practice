@@ -6,3 +6,4 @@ Week6- Tuesday - practicing more DOM and understandi frontend.
 Week6 - Wedensday- practiced DOM methods
 week6 - Thursday - did some frontend
 week9 -axios vs fetch and JWR authentication+local storage.
+week10 - starting end to end trillio project
